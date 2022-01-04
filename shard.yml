@@ -1,0 +1,23 @@
+name: cliq
+version: 1.0.0
+
+authors:
+  - moe <moe@busyloop.net>
+
+crystal: 1.2.2
+
+description: |
+  CLI Framework
+
+license: MIT
+
+dependencies:
+  toka:
+    github: Papierkorb/toka
+
+development_dependencies:
+  stdio:
+    github: mosop/stdio
+
+  ameba:
+    github: crystal-ameba/ameba
