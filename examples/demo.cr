@@ -58,5 +58,13 @@ class GreetPerson < Cliq::Command
   end
 end
 
+class Ping < Cliq::Command
+  command "ping", "Minimum viable example"
+
+  def call(args)
+    puts "pong"
+  end
+end
+
 # Let's go!
 Cliq.invoke(ARGV) unless ENV["ENV"]? == "test"

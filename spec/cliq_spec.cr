@@ -43,6 +43,16 @@ describe GreetPerson do
   end
 end
 
+describe Ping do
+  it "pongs" do
+    stdout, _ = Stdio.capture do |io|
+      Cliq.invoke(["ping"])
+      [io.out.gets_to_end, io.err.gets_to_end]
+    end
+    stdout.not_nil!.should contain("pong")
+  end
+end
+
 describe Cliq do
   it "shows command list when no valid command is given" do
     stdout, _ = Stdio.capture do |io|

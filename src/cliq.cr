@@ -115,4 +115,8 @@ abstract class Cliq::Command
   macro flags(*args)
     Toka.mapping({{*args}})
   end
+
+  macro inherited
+    Toka.mapping({} of String => String)
+  end
 end
