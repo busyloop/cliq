@@ -32,10 +32,11 @@ The quick way to create a user-friendly **Command Line Interface** in Crystal. â
 require "cliq"
 
 class GreetPerson < Cliq::Command
-  # Declare the command name, description and help-text(s) for positional arguments
-  command "greet person", "Greet someone", ["<name> Name to greet"]
+  command "greet person"
+  summary "Greet someone"
+  description "I greet, therefore I am"
+  args ["<name> Name to greet"]
 
-  # Declare the flags for this command
   flags({
     yell: Bool?,
     count: {
@@ -62,15 +63,18 @@ Cliq.invoke(ARGV)
 
 ## How it works
 
-* You can have any number of `Cliq::Command` subclasses in your program.
+* You can have any number of `Cliq::Command` subclasses in your program.  
   Cliq merges them together to form the final CLI.
 * Each must have a method  `#call(args : Array(String))`.
-* Use the  `command`-macro to declare the _command name_, _description_ and _description of positional arguments_
-  * The latter two are optional.
-  * Spaces are allowed in the _command name_.
+* Use  `command` to declare the _command name_
+  * Spaces are allowed.  
     If you want a sub-command `foo bar batz` then just put exactly that in there.
-* Use the `flags`-macro to declare the flags that your command accepts
-
+* Use `summary` to declare a short text to be displayed in the command list (top level help screen)
+* Use `description` to declare a longer text to be displayed in the command help screen (`./foo bar --help`)
+* Both `summary` and `description` can be multi-line strings and will be auto-indented as needed
+* Use `args` to describe positional arguments
+  * Takes an Array of String's in format `"[foo] Description"`
+* Use `flags` to declare the flags that your command accepts
 * See [examples/demo.cr](./examples/demo.cr) for a demo with multiple sub-commands
 
 
@@ -86,7 +90,7 @@ flags({
 })
 ```
 
-This allows `--verbose` or `-v`  (optional)
+This allows `--verbose` or `-v`   
 and requires  `--count N` or `-c N`  (where N must be an integer).
 
 ### Long-hand syntax

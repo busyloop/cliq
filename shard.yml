@@ -1,10 +1,10 @@
 name: cliq
-version: 1.0.1
+version: 2.0.0
 
 authors:
   - moe <moe@busyloop.net>
 
-crystal: 1.2.2
+crystal: 1.8.2
 
 description: |
   CLI Framework
@@ -14,6 +14,7 @@ license: MIT
 dependencies:
   toka:
     github: Papierkorb/toka
+    version: 0.1.2
 
 development_dependencies:
   stdio:

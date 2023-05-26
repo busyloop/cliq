@@ -10,13 +10,13 @@ class Cliq
 
   EXE = File.basename(Process.executable_path.not_nil!)
 
-  @@command_map = {} of String => { Cliq::Command.class, String, Array(String) }?
+  @@command_map = {} of String => Cliq::Command.class
 
-  def self.command(cmd_path : String, cmd_class, desc = "", pos_arg_spec = [] of String)
-    @@command_map[cmd_path] = { cmd_class, desc, pos_arg_spec }
+  def self.command(cmd_path : String, cmd_class)
+    @@command_map[cmd_path] = cmd_class
   end
 
-  def self.invoke(argv=ARGV)
+  def self.invoke(argv = ARGV)
     args = [] of String
     argv.each do |arg|
       next if arg[0] == '-'
@@ -25,7 +25,7 @@ class Cliq
       next
     end
 
-    cmd : { Cliq::Command.class, String, Array(String) }? = nil
+    cmd : Cliq::Command.class | Nil = nil
     guess : Array(String)? = nil
 
     n = args.size - 1
@@ -42,22 +42,30 @@ class Cliq
 
     if cmd
       begin
-        raise Cliq::Error.new(nil) if argv.includes?("-h") || argv.includes?("--help") || argv.includes?("-----ArrrRRrgh!!1!")
+        raise Cliq::Error.new(nil) if argv.includes?("-h") || argv.includes?("--help")
 
-        🍺 = cmd[0].new(argv)
+        🍺 = cmd.new(argv)
         pos_opts = 🍺.positional_options
-        (0..n+1).each do
+        (0..n + 1).each do
           pos_opts.shift
         end
         🍺.call(pos_opts)
       rescue ex : Toka::MissingOptionError | Toka::ConversionError | Toka::UnknownOptionError | Cliq::Error
-        puts "\nUsage: #{EXE} #{part} #{cmd[2].map { |e| e.split(" ")[0] }.join(" ")}"
+        puts "\nUsage: #{EXE} #{part} #{cmd.args.map { |e| e.split(" ")[0] }.join(" ")}"
 
-        unless cmd[2].empty?
-          indent = cmd[2].max_of { |e| e.includes?(" ") ? e.split(" ")[0].size : 0 }
+        if desc = cmd.description
+          puts
+          desc.split("\n").each do |line|
+            print "  "
+            puts line
+          end
+        end
+
+        unless cmd.args.empty?
+          indent = cmd.args.max_of { |e| e.includes?(" ") ? e.split(" ")[0].size : 0 }
           if 0 < indent
             puts
-            cmd[2].each do |pos_arg_spec|
+            cmd.args.each do |pos_arg_spec|
               if pos_arg_spec.includes? " "
                 spec, desc = pos_arg_spec.split(" ", 2)
                 print "  #{spec}"
@@ -72,7 +80,7 @@ class Cliq
           end
         end
 
-        puts Toka::HelpPageRenderer.new(cmd[0])
+        puts Toka::HelpPageRenderer.new(cmd)
         puts "\e[31;1m" + ex.message.not_nil! + "\n\n" unless ex.message.nil?
       end
       return
@@ -90,10 +98,10 @@ class Cliq
       print "\e[33;1m" if guess.try &.includes? cmd_name
       print "  #{cmd_name}"
       print "\e[0m"
-      if cmd[1] == ""
+      if cmd.summary == ""
         puts
       else
-        lines = cmd[1].split("\n")
+        lines = cmd.summary.split("\n")
         print " " * (max_width - cmd_name.size + 3)
         lines.each_with_index do |line, i|
           puts line
@@ -108,8 +116,24 @@ end
 abstract class Cliq::Command
   abstract def call(args : Array(String))
 
-  def self.command(cmd_path : String, desc = "", pos_args = [] of String)
-    Cliq.command(cmd_path, self, desc, pos_args)
+  class_getter summary : String = ""
+  class_getter description : String? = nil
+  class_getter args : Array(String) = [] of String
+
+  def self.command(name : String)
+    Cliq.command(name, self)
+  end
+
+  def self.summary(text : String)
+    @@summary = text
+  end
+
+  def self.description(text : String)
+    @@description = text
+  end
+
+  def self.args(args : Array(String))
+    @@args = args
   end
 
   macro flags(*args)
